@@ -1,0 +1,13 @@
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    }
+  ],
+  "firestore": {
+    "database": "ai-studio-jeepreptracker-92e6fc67-7e4a-4dd5-b4a2-fc1903e5ccaa",
+    "rules": "firestore.rules"
+  }
+}

@@ -1,0 +1,154 @@
+rules_version = '2';
+
+// ============================================================================
+// JEE Prep Tracker — Firestore Security Rules (Option B Schema)
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Admins are checked against top-level admins collection or fixed emails
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email != null
+        && (
+          request.auth.token.email.lower() == 'awacharshyam13@gmail.com' 
+          || request.auth.token.email.lower() == 'yashawachar101@gmail.com'
+          || exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()))
+        );
+    }
+
+    // Teacher check verifies registry in global allowlist
+    function isTeacher() {
+      return isSignedIn()
+        && request.auth.token.email != null
+        && exists(/databases/$(database)/documents/platform/main/teachers/$(request.auth.token.email.lower().replace('@', '_').replace('.', '_')));
+    }
+
+    // Verify if the teacher is assigned to this specific class
+    function isTeacherOfClass(classId) {
+      return isTeacher()
+        && get(/databases/$(database)/documents/platform/main/teachers/$(request.auth.token.email.lower().replace('@', '_').replace('.', '_'))).data.classId == classId;
+    }
+
+    function isStaff() {
+      return isTeacher() || isAdmin();
+    }
+
+    function isStaffOfClass(classId) {
+      return isTeacherOfClass(classId) || isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // admins/{email} — admin registry allowlist
+    // ------------------------------------------------------------------
+    match /admins/{email} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Allow collection group reads on students for global rankings and dashboards
+    match /{path=**}/students/{studentId} {
+      allow read: if isSignedIn();
+    }
+
+    // Allow collection group reads on mock test attempts for the leaderboards
+    match /{path=**}/mockTests/{attemptId} {
+      allow read: if isSignedIn();
+    }
+
+    // ------------------------------------------------------------------
+    // classes/{classId}  — top-level class/institute collection
+    // ------------------------------------------------------------------
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      // Class scoring config rules
+      match /settings/{settingId} {
+        allow read: if isSignedIn();
+        allow write: if isStaffOfClass(classId);
+      }
+
+      // Class mock tests templates
+      match /mockTests/{testId} {
+        allow read: if isSignedIn();
+        allow write: if isStaffOfClass(classId);
+      }
+
+      // Class students list
+      match /students/{uid} {
+        allow read: if isSignedIn();
+        
+        // Students may create their profile inside a class, but cannot self-assign role
+        allow create: if isStaffOfClass(classId)
+          || (isSelf(uid) && request.resource.data.role == 'student');
+
+        // Students can edit profiles, but only staff can change roles
+        allow update: if isStaffOfClass(classId)
+          || (isSelf(uid) && request.resource.data.role == resource.data.role);
+
+        allow delete: if isAdmin();
+
+        // Student subcollections
+        match /dailyLogs/{logId} {
+          allow read, write: if isSelf(uid) || isStaffOfClass(classId);
+        }
+
+        match /backlogs/{backlogId} {
+          allow read, write: if isSelf(uid) || isStaffOfClass(classId);
+        }
+
+        match /mockTests/{attemptId} {
+          allow read, write: if isSelf(uid) || isStaffOfClass(classId);
+        }
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // platform/main/teachers/{teacherId} — teacher allowlist registry
+    // ------------------------------------------------------------------
+    match /platform/{platformId}/teachers/{teacherId} {
+      // Any signed-in user must be able to read their OWN teacher doc (by email-
+      // derived id) so the app can detect approval in real time — not just staff.
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ------------------------------------------------------------------
+    // platform/main/teacherRequests/{uid} — self-serve "I'm a teacher" requests,
+    // gated behind admin approval before a real teacher doc is ever created.
+    // ------------------------------------------------------------------
+    match /platform/{platformId}/teacherRequests/{uid} {
+      // A user may only create/read/delete their OWN pending request, and must
+      // submit it under their own uid with their own auth email — never someone
+      // else's, and never with a role/status that skips admin review.
+      allow create: if isSelf(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'pending'
+        && request.resource.data.classId is string
+        && request.resource.data.classId.size() > 0;
+
+      allow read: if isSelf(uid) || isAdmin();
+
+      // Only admins can move a request to approved/rejected.
+      allow update: if isAdmin();
+
+      allow delete: if isSelf(uid) || isAdmin();
+    }
+
+    // Default deny for all other resources
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

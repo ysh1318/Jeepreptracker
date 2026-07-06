@@ -1,0 +1,8 @@
+{
+  "name": "JEE Prep Tracker",
+  "description": "An interactive JEE Prep Tracker with points, rank badges, subjects target tracking, syllabus progress, mock test analyzer, and student dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JEE Prep Tracker Portal</title>
+    <script>
+      (function() {
+        function logToServer(type, data) {
+          fetch('/api/log-client-error', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: type, data: data, url: window.location.href, timestamp: new Date().toISOString() })
+          }).catch(function() {});
+        }
+
+        // Catch uncaught JS errors
+        window.onerror = function(message, source, lineno, colno, error) {
+          logToServer('ERROR', {
+            message: message,
+            source: source,
+            line: lineno,
+            col: colno,
+            stack: error ? error.stack : ''
+          });
+        };
+
+        // Catch promise rejections
+        window.onunhandledrejection = function(event) {
+          logToServer('PROMISE_REJECTION', {
+            message: event.reason ? (event.reason.message || String(event.reason)) : 'Unhandled rejection',
+            stack: event.reason ? (event.reason.stack || '') : ''
+          });
+        };
+
+        // Override console logs
+        var originalLog = console.log;
+        console.log = function() {
+          var args = Array.prototype.slice.call(arguments);
+          originalLog.apply(console, args);
+          logToServer('LOG', args.join(' '));
+        };
+
+        var originalError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          originalError.apply(console, args);
+          logToServer('CONSOLE_ERROR', args.join(' '));
+        };
+
+        var originalWarn = console.warn;
+        console.warn = function() {
+          var args = Array.prototype.slice.call(arguments);
+          originalWarn.apply(console, args);
+          logToServer('WARN', args.join(' '));
+        };
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

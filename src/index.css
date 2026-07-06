@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+:root {
+  --bg-light: #faf9f5;
+  --sidebar-bg: #f7f6f3;
+  --border-light: #ece9e3;
+  --card-bg: #ffffff;
+  --green-900: #1b3b2a;
+  --green-800: #204631;
+  --green-tint: #e7eee6;
+  --text-primary: #1b1c19;
+  --text-secondary: #83837c;
+  --text-muted: #a6a59f;
+  --orange-bg: #fdf6e9;
+  --orange: #e8871e;
+  --purple-bg: #f4f1fa;
+  --purple: #7c5cd6;
+  --lav-bg: #f1f1f8;
+  --lav: #5b6bd6;
+  --green-tint-bg: #eff3ec;
+  --gold: #e8a615;
+  --gold-bg: #fbecc0;
+  --silver-bg: #e7e9e4;
+  --bronze-bg: #eccaa0;
+  --red: #e0484b;
+  --green-up: #1f9d51;
+  --dark-bg: #0d1210;
+  --dark-card: #121a17;
+  --dark-border: rgba(255, 255, 255, .08);
+  --lime: #d8ef58;
+  --dark-text: #f4f4ef;
+  --dark-text-secondary: #8b958e;
+  --shadow-sm: 0 1px 2px rgba(27, 28, 25, 0.04);
+  --shadow-card: 0 1px 2px rgba(27, 28, 25, 0.04), 0 6px 16px -8px rgba(27, 28, 25, 0.08);
+  --shadow-card-hover: 0 2px 4px rgba(27, 28, 25, 0.05), 0 12px 24px -10px rgba(27, 28, 25, 0.12);
+  --shadow-dark-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 20px -10px rgba(0, 0, 0, 0.4);
+  --ease: cubic-bezier(.4, 0, .2, 1);
+}
+
+body {
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body.dark-page {
+  background: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d8d6cd;
+  border-radius: 20px;
+  border: 2px solid var(--bg-light);
+}
+
+.dark-page ::-webkit-scrollbar-thumb {
+  background: #28332c;
+  border: 2px solid var(--dark-bg);
+}
+
+/* Transitions */
+.transition-all-custom {
+  transition: background 0.16s var(--ease), border-color 0.16s var(--ease), box-shadow 0.16s var(--ease),
+    transform 0.16s var(--ease), color 0.16s var(--ease), opacity 0.16s var(--ease);
+}
+
+/* ── Rank Modal Animations ── */
+@keyframes rankPop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rankBadgePulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+  }
+}
+
+@keyframes holographicSweep {
+  0% {
+    transform: translateX(-100%) rotate(30deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(30deg);
+  }
+}
+
+.animate-rank-pop {
+  animation: rankPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-badge-pulse {
+  animation: rankBadgePulse 2.5s infinite ease-in-out;
+}
+
+.holographic-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 30%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.2) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%) rotate(30deg);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.holographic-card:hover::before {
+  animation: holographicSweep 1.6s ease-in-out;
+}
+
+/* Animated glint sweep overlay directly on the rank badge */
+.badge-glint {
+  position: relative;
+  overflow: hidden;
+}
+.badge-glint::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  animation: glintSweep 3.5s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes glintSweep {
+  0% { transform: translate(-100%, -100%) rotate(45deg); }
+  25% { transform: translate(100%, 100%) rotate(45deg); }
+  100% { transform: translate(100%, 100%) rotate(45deg); }
+}
+
+/* Rank specific premium animations */
+.badge-grandmaster {
+  filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.75));
+  animation: badgeFloating 3s infinite ease-in-out;
+}
+.badge-heroic {
+  filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.75));
+  animation: badgeFloating 3s infinite ease-in-out;
+}
+.badge-diamond {
+  filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.6));
+  animation: badgePulse 2.8s infinite ease-in-out;
+}
+.badge-platinum {
+  filter: drop-shadow(0 0 7px rgba(16, 185, 129, 0.5));
+  animation: badgePulse 3.2s infinite ease-in-out;
+}
+.badge-gold {
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.5));
+}
+.badge-silver {
+  filter: drop-shadow(0 0 4px rgba(156, 163, 175, 0.4));
+}
+.badge-bronze {
+  filter: drop-shadow(0 0 4px rgba(180, 83, 9, 0.35));
+}
+
+@keyframes badgeFloating {
+  0% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-4px) scale(1.04); }
+  100% { transform: translateY(0px) scale(1); }
+}
+
+@keyframes badgePulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
