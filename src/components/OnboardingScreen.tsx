@@ -95,7 +95,8 @@ export default function OnboardingScreen({
   onVerify,
   onSelectStudentRole,
   onRequestTeacherAccess,
-  onContinueAsStudentInstead
+  onContinueAsStudentInstead,
+  onLoadClasses
 }: OnboardingScreenProps) {
   const handleSignOut = async () => {
     try {
