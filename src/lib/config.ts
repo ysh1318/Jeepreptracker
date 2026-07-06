@@ -30,13 +30,11 @@
 
 export const DEFAULT_CLASS_ID = 'demo_class';
 
-export const ADMIN_EMAIL = 'awacharshyam13@gmail.com';
-export const ALT_ADMIN_EMAIL = 'yashawachar101@gmail.com';
+export const ADMIN_EMAIL = 'yashawachar101@gmail.com';
 
 export function isAdminEmail(email: string | null | undefined): boolean {
   if (!email) return false;
-  const lower = email.toLowerCase();
-  return lower === ADMIN_EMAIL.toLowerCase() || lower === ALT_ADMIN_EMAIL.toLowerCase();
+  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 }
 
 /**
