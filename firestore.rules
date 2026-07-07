@@ -15,13 +15,19 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
+    // Helper: normalize email to doc ID format (lowercase, @ and . both → _)
+    // This MUST match normalizeEmailForDocId() in src/lib/emailNormalization.ts
+    function normalizeEmail(email) {
+      return email.lower().replaceAll('@', '_').replaceAll('.', '_');
+    }
+
     // Admins are checked against top-level admins collection or fixed emails
     function isAdmin() {
       return isSignedIn()
         && request.auth.token.email != null
         && (
           request.auth.token.email.lower() == 'yashawachar101@gmail.com'
-          || exists(/databases/$(database)/documents/admins/$(request.auth.token.email.lower()))
+          || exists(/databases/$(database)/documents/admins/$(normalizeEmail(request.auth.token.email)))
         );
     }
 
@@ -29,13 +35,13 @@ service cloud.firestore {
     function isTeacher() {
       return isSignedIn()
         && request.auth.token.email != null
-        && exists(/databases/$(database)/documents/platform/main/teachers/$(request.auth.token.email.lower().replace('@', '_').replace('.', '_')));
+        && exists(/databases/$(database)/documents/platform/main/teachers/$(normalizeEmail(request.auth.token.email)));
     }
 
     // Verify if the teacher is assigned to this specific class
     function isTeacherOfClass(classId) {
       return isTeacher()
-        && get(/databases/$(database)/documents/platform/main/teachers/$(request.auth.token.email.lower().replace('@', '_').replace('.', '_'))).data.classId == classId;
+        && get(/databases/$(database)/documents/platform/main/teachers/$(normalizeEmail(request.auth.token.email))).data.classId == classId;
     }
 
     function isStaff() {
@@ -47,7 +53,7 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
-    // admins/{email} — admin registry allowlist
+    // admins/{email} — admin registry allowlist (top-level)
     // ------------------------------------------------------------------
     match /admins/{email} {
       allow read: if isSignedIn();
